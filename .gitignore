@@ -1,0 +1,20 @@
+## .NET
+bin/
+obj/
+*.user
+*.suo
+
+## Publish output
+publish/
+*.pubxml
+*.pubxml.user
+
+## IDE
+.vs/
+.vscode/
+*.userosscache
+*.sln.docstates
+
+## OS cruft
+Thumbs.db
+Desktop.ini

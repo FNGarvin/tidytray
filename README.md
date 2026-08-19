@@ -1,0 +1,58 @@
+# TidyTray
+
+A small Windows tray watchdog that keeps your notification area icons exactly as visible or hidden as you set them — even after the owning app updates.
+
+## The problem
+
+Windows defaults every tray icon to hidden, and treats "shown" as a fragile, temporary favor it's free to revoke. Explicitly tell it to show an icon and it'll usually honor that — until the owning app updates, at which point Windows silently reverts the icon to hidden with zero notification that it happened. You just eventually notice the icon is gone.
+
+The mechanism behind it: Windows remembers each icon's visibility in the registry, keyed roughly by the icon's owning executable path. Plenty of apps (Electron/Squirrel-style auto-updaters especially — Claude Desktop, Discord, Slack, and others) install each new version into its own version-stamped folder:
+
+```
+...\AnthropicClaude\app-1.24012.11\claude.exe
+...\AnthropicClaude\app-1.25927.0\claude.exe
+```
+
+Every update changes that path, which means Windows treats the icon as brand new and silently defaults it back to hidden — discarding a preference you explicitly set, with no notification that it happened.
+
+## What TidyTray does
+
+TidyTray runs quietly in the tray and:
+
+1. Watches `HKCU\Control Panel\NotifyIconSettings` (Explorer's own undocumented store for this) for changes, live — no polling delay, no Explorer restart needed.
+2. Resolves each icon to a stable, human-readable identity (the exe's product/file description, falling back to tooltip or filename) so an app update doesn't fork your preference into a new entry.
+3. Automatically detects and separates genuinely distinct icons that happen to share a generic name (a number of Windows' own system tray icons all report the identical `ProductName`, for example) — without splitting apart different versions of the same real app.
+4. Re-applies your stored preference the moment it drifts, and remembers a sensible default (visible) the first time it ever sees a new icon.
+5. Gives you a simple checklist UI, opened from the tray icon, to set the preference for anything it has ever seen.
+
+## Requirements
+
+Windows 10/11. No .NET runtime installation needed — release builds are published self-contained as a single portable `.exe`.
+
+## Building
+
+```
+cd src/TidyTray
+dotnet build
+```
+
+## Publishing a portable single-file build
+
+```
+cd src/TidyTray
+dotnet publish -c Release
+```
+
+Output lands in `src/TidyTray/bin/Release/net10.0-windows/win-x64/publish/TidyTray.exe` — a single self-contained executable, no installer required.
+
+## Running
+
+Just run `TidyTray.exe`. It sits in the tray with no visible window. Double-click (or right-click → Settings) to open the checklist. Right-click → "Start with Windows" registers it to launch automatically at login (off by default — nothing is added to your startup sequence unless you turn it on yourself).
+
+## How the underlying mechanism works
+
+Writing a `DWORD` value named `IsPromoted` (`1` = shown, `0`/absent = hidden-in-overflow) to the relevant subkey under `HKCU\Control Panel\NotifyIconSettings` takes effect live, in both directions, confirmed by hand against both native and Electron-based apps — no Explorer restart required. This is undocumented behavior (there's no public Win32 API for it), so it's possible a future Windows build changes how it works.
+
+## License
+
+MIT — see [LICENSE](LICENSE).
