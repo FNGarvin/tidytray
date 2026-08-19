@@ -6,14 +6,14 @@ A small Windows tray watchdog that keeps your notification area icons exactly as
 
 Windows defaults every tray icon to hidden, and treats "shown" as a fragile, temporary favor it's free to revoke. Explicitly tell it to show an icon and it'll usually honor that — until the owning app updates, at which point Windows silently reverts the icon to hidden with zero notification that it happened. You just eventually notice the icon is gone.
 
-The mechanism behind it: Windows remembers each icon's visibility in the registry, keyed roughly by the icon's owning executable path. Plenty of apps (Electron/Squirrel-style auto-updaters especially — Claude Desktop, Discord, Slack, and others) install each new version into its own version-stamped folder:
+The mechanism behind it: Windows remembers each icon's visibility in the registry, keyed roughly by the icon's owning executable path. Any app whose install path changes on every update trips this — which, in practice, means most of them. The Xbox app is a good example everyone's probably got installed: it's a Microsoft Store (MSIX) package, and the entire package version is baked into its install path:
 
 ```
-...\AnthropicClaude\app-1.24012.11\claude.exe
-...\AnthropicClaude\app-1.25927.0\claude.exe
+...\WindowsApps\Microsoft.GamingApp_2608.1001.17.0_x64__8wekyb3d8bbwe\XboxPcTray.exe
+...\WindowsApps\Microsoft.GamingApp_2609.1002.4.0_x64__8wekyb3d8bbwe\XboxPcTray.exe
 ```
 
-Every update changes that path, which means Windows treats the icon as brand new and silently defaults it back to hidden — discarding a preference you explicitly set, with no notification that it happened.
+Electron/Squirrel-style auto-updaters (Discord, Slack, Claude Desktop, and plenty of others) have the same problem via a different pattern — each new version installs into its own `app-x.y.z` folder. Either way, every update changes the path, Windows treats the icon as brand new, and it silently defaults back to hidden — discarding a preference you explicitly set, with no notification that it happened.
 
 ## What TidyTray does
 
