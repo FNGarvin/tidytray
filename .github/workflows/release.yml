@@ -1,0 +1,35 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-publish:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Publish self-contained single-file build
+        working-directory: src/TidyTray
+        run: dotnet publish -c Release
+
+      - name: Stage release asset
+        shell: pwsh
+        run: |
+          $publishDir = "src/TidyTray/bin/Release/net10.0-windows/win-x64/publish"
+          Copy-Item "$publishDir/TidyTray.exe" "TidyTray-${{ github.ref_name }}-win-x64.exe"
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: TidyTray-${{ github.ref_name }}-win-x64.exe
+          generate_release_notes: true

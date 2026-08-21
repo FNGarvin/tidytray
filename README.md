@@ -27,16 +27,26 @@ TidyTray runs quietly in the tray and:
 
 ## Requirements
 
-Windows 10/11. No .NET runtime installation needed — release builds are published self-contained as a single portable `.exe`.
+Windows 10/11. No .NET runtime installation needed — release builds are self-contained, single portable `.exe` files.
 
-## Building
+## Installing
+
+Download the latest `TidyTray-*-win-x64.exe` from the [Releases](https://github.com/FNGarvin/tidytray/releases) page and run it — no installer, no admin rights, nothing else to set up.
+
+## Running
+
+Just run `TidyTray.exe`. It sits in the tray with no visible window. Double-click (or right-click → Settings) to open the checklist. Right-click → "Start with Windows" registers it to launch automatically at login (off by default — nothing is added to your startup sequence unless you turn it on yourself).
+
+## Building from source
+
+For development:
 
 ```
 cd src/TidyTray
 dotnet build
 ```
 
-## Publishing a portable single-file build
+Releases are built and published automatically — pushing a `v*` tag triggers [GitHub Actions](.github/workflows/release.yml) to produce the portable single-file exe and attach it to a GitHub release, so there's normally no need to do this by hand. To reproduce that build locally anyway:
 
 ```
 cd src/TidyTray
@@ -44,10 +54,6 @@ dotnet publish -c Release
 ```
 
 Output lands in `src/TidyTray/bin/Release/net10.0-windows/win-x64/publish/TidyTray.exe` — a single self-contained executable, no installer required.
-
-## Running
-
-Just run `TidyTray.exe`. It sits in the tray with no visible window. Double-click (or right-click → Settings) to open the checklist. Right-click → "Start with Windows" registers it to launch automatically at login (off by default — nothing is added to your startup sequence unless you turn it on yourself).
 
 ## How the underlying mechanism works
 
